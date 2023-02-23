@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking-Master / Calculator - A simple calculator (not for cheating on tests)</title>
+    <style>
+      html, body, * {
+        font-family: Arial, Helvetica, sans-serif;
+        user-select: none !important;
+      }
+      .wrapper {
+        position: absolute;
+        width: 100%;
+        margin: 0;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .calculator {
+        width: 252px;
+        height: 360px;
+        border: 1px solid #333;
+        background: #eee;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+      }
+      .row * {
+        display: inline-block;
+      }
+      .calculator-button {
+        background: #fff;
+        border: 1px solid #333;
+        width: 45px;
+        height: 45px;
+        display: inline-flex;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        margin-left: 10px;
+        margin-bottom: 5px;
+        cursor: pointer !important;
+        background-image: -webkit-linear-gradient(-30deg, #fff 50%, #efefef 50%);
+      }
+      .calculator-button:hover {
+        background-image: -webkit-linear-gradient(-30deg, #eee 50%, #ddd 50%);
+      }
+      .calculator-button:active {
+        background-image: -webkit-linear-gradient(-30deg, #ccc 50%, #aaa 50%);
+      }
+      .btn-content {
+        position: relative;
+        margin-top: 40px !important;
+      }
+      .content {
+        position: relative;
+        margin-top: 10px !important;
+      }
+      .monitor {
+        background: #fff;
+        position: relative;
+        left: 50%;
+        margin-left: -46%;
+        width: 89%;
+        height: 30px;
+        border: 2px solid #333;
+        display: inline-block;
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: right;
+        padding-right: 5px;
+        vertical-align: middle;
+        text-overflow: clip;
+        overflow: hidden;
+      }
+      .operator {
+        width: 35px;
+        height: 35px;
+        border: 1.5px solid #333;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="calculator">
+        <div class="content">
+          <div class="monitor"></div>
+          <div class="btn-content">
+            <div class="row" style="margin-top: -35px">
+              <div class="calculator-button operator" onclick="calculate('^')" style="margin: 9.5px !important">x^y</div>
+              <div class="calculator-button operator" onclick="calculate('*!')" style="margin: 9.5px !important">AC</div>
+              <div class="calculator-button operator" onclick="calculate('+!')" style="margin: 9.5px !important">CE</div>
+              <div class="calculator-button operator" onclick="calculate('=')">&equals;</div>
+            </div>
+            <div class="row">
+              <div class="calculator-button" onclick="calculate(this.textContent)">7</div>
+              <div class="calculator-button" onclick="calculate(this.textContent)">8</div>
+              <div class="calculator-button" onclick="calculate(this.textContent)">9</div>
+              <div class="calculator-button operator" onclick="calculate('/')">&divide;</div>
+            </div>
+            <div class="row">
+              <div class="calculator-button" onclick="calculate(this.textContent)">4</div>
+              <div class="calculator-button" onclick="calculate(this.textContent)">5</div>
+              <div class="calculator-button" onclick="calculate(this.textContent)">6</div>
+              <div class="calculator-button operator" onclick="calculate('*')">&times;</div>
+            </div>
+            <div class="row">
+              <div class="calculator-button" onclick="calculate(this.textContent)">1</div>
+              <div class="calculator-button" onclick="calculate(this.textContent)">2</div>
+              <div class="calculator-button" onclick="calculate(this.textContent)">3</div>
+              <div class="calculator-button operator" onclick="calculate('-')">&minus;</div>
+            </div>
+            <div class="row">
+              <div class="calculator-button" onclick="calculate(this.textContent)">0</div>
+              <div class="calculator-button" onclick="calculate(this.textContent)">.</div>
+              <div class="calculator-button" onclick="calculate('+-')">&#8314;&#8725;&#8331;</div>
+              <div class="calculator-button operator" onclick="calculate('+')">&plus;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      let result = "";
+      let monitorResult = null;
+      let recents = "";
+      let evaled = false;
+      let CE_once = false;
+      let CE_twice = false;
+      let exponent = false;
+      let current = null;
+      function calculate(value) {
+        function trim(s, c) {
+          if (c === "]") c = "\\]";
+          if (c === "\\") c = "\\\\";
+          return s.replace(new RegExp("^[" + c + "]+|[" + c + "]+$", "g"), "");
+        }
+        value = value.trim();
+        if (!isNaN(value - 0)) {
+          if (exponent) {
+            let res = "";
+            for (let i = 0; i < (value - 0); i++) {
+              res += current + "*";
+            }
+            res = "(" + trim(res.trim(), "*") + ")";
+            result += "+" + res;
+            exponent = false;
+            return;
+          }
+          current = value;
+          result += value;
+          !!recents.trim() && (recents += value);
+          evaled && (result += "+", recents = "+");
+          CE_once = false;
+          CE_twice = false;
+          monitorResult = null;
+          evaled = false;
+        } else {
+          if (/(\/|\*|\-|\+)/gi.test(value[0]) && value[0] == value) {
+            evaled && (result += "+", recents = "+");
+            recents = value;
+            result += value;
+            CE_once = false;
+            CE_twice = false;
+            monitorResult = null;
+            evaled = false;
+          }
+          if (value == "=") {
+            if (!result.trim()) return;
+            if (result.trim() && evaled) {
+              result += recents;
+            }
+            evaled = true;
+            monitorResult = eval(result);
+          }
+          if (value == "+!") {
+            current = null;
+            evaled = false;
+            monitorResult = null;
+            CE_once = true;
+            if (CE_twice) return calculate("*!");
+            if (CE_once) CE_twice = true;
+            result = result.split(/(\/|\*|\-|\+)/gi).reverse().splice(1).reverse().join("");
+            recents = result.split(/(\/|\*|\-|\+)/gi).reverse()[0];
+            exponent = false;
+          }
+          if (value == "*!") {
+            recents = "";
+            result = "";
+            CE_once = false;
+            CE_twice = false;
+            monitorResult = null;
+            evaled = false;
+            current = null;
+            exponent = false;
+          }
+          if (value == "+-") {
+            if (result.split(/[0-9]$/).reverse()[1] == "-") {
+              current = "-" + current;
+            }
+            current = "-" + current;
+            result = result.split(/[0-9]$/).join("");
+            result += current;
+          }
+          if (value == "^") {
+            exponent ? exponent = false : exponent = true;
+          }
+        }
+      }
+      setInterval(() => {
+        if (!monitorResult) {
+          let result1 = result.split(/(\/|\*|\-|\+)/gi).join(" ").replace(/\*/gi, "&times;").replace(/\//gi, "&divide;").replace(/\+/gi, "&plus;").replace(/\-/gi, "&minus;").toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          document.querySelector(".monitor").innerHTML = (!result1.trim() ? 0 : result1);
+        } else {
+          document.querySelector(".monitor").textContent = monitorResult.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      });
+    </script>
+  </body>
+</html>
