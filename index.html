@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parking-Master / Calculator - A simple calculator (not for cheating on tests)</title>
     <style>
+      @font-face {
+        font-family: "Mono";
+        src: url(Digital.ttf);
+      }
       html, body, * {
         font-family: Arial, Helvetica, sans-serif;
         user-select: none !important;
       }
       .wrapper {
-        position: absolute;
+        position: relative;
         width: 100%;
         margin: 0;
         left: 0;
@@ -23,12 +27,14 @@
         justify-content: center;
       }
       .calculator {
+        position: relative !important;
         width: 252px;
         height: 360px;
         border: 1px solid #333;
         background: #eee;
         border-radius: 4px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+        top: 40px;
       }
       .row * {
         display: inline-block;
@@ -71,13 +77,14 @@
         border: 2px solid #333;
         display: inline-block;
         margin-top: 20px;
-        font-size: 20px;
+        font-size: 25px;
         font-weight: bold;
         text-align: right;
         padding-right: 5px;
         vertical-align: middle;
         text-overflow: clip;
         overflow: hidden;
+        font-family: "Mono", Arial !important;
       }
       .operator {
         width: 35px;
@@ -85,9 +92,20 @@
         border: 1.5px solid #333;
         font-weight: bold;
       }
+      h1, p {
+        text-align: center;
+        margin-top: 30px;
+        color: #333;
+        font-weight: lighter;
+      }
+      a {
+        color: #416dea !important;
+      }
     </style>
   </head>
   <body>
+    <h1>Simple Calculator</h1>
+    <p>Just put your math in, calculate it, and don't cheat on your test.</p>
     <div class="wrapper">
       <div class="calculator">
         <div class="content">
@@ -127,6 +145,10 @@
         </div>
       </div>
     </div>
+    <br>
+    <br>
+    <br>
+    <p>View <b style="font-weight: 600;">Parking-Master/Calculator</b> on <a href="https://github.com/Parking-Master/Calculator">GitHub</a></p>
     <script>
       let result = "";
       let monitorResult = null;
@@ -150,14 +172,14 @@
               res += current + "*";
             }
             res = "(" + trim(res.trim(), "*") + ")";
-            result += "+" + res;
+            result += "+" + res + "-" + current;
             exponent = false;
             return;
           }
-          current = value;
-          result += value;
-          !!recents.trim() && (recents += value);
+          (current != null && current.includes(".")) ? current += value : current = value;
           evaled && (result += "+", recents = "+");
+          !!recents.trim() && (recents += value);
+          result += value;
           CE_once = false;
           CE_twice = false;
           monitorResult = null;
@@ -165,6 +187,10 @@
         } else {
           if (/(\/|\*|\-|\+)/gi.test(value[0]) && value[0] == value) {
             evaled && (result += "+", recents = "+");
+            if (recents == "+") {
+              let r = result.split(/(\/|\*|\-|\+)/gi);
+              r.reverse().splice(JSON.parse(JSON.stringify(r)).indexOf("+"), 1).reverse().join(/(\/|\*|\-|\+)/gi), r = r.reverse().join(""), result = r;
+            }
             recents = value;
             result += value;
             CE_once = false;
@@ -191,6 +217,18 @@
             recents = result.split(/(\/|\*|\-|\+)/gi).reverse()[0];
             exponent = false;
           }
+          if (value == ".") {
+            if (typeof (current - 0) == "number") {
+              if ((() => {
+                let r = result.split(/(\/|\*|\-|\+)/gi);
+                r.reverse().splice(JSON.parse(JSON.stringify(r)).indexOf("+"), 1).reverse().join(/(\/|\*|\-|\+)/gi), r = r.reverse().join("");
+                return typeof (r[r.length - 1] - 0) == "number";
+              })() && result[result.length - 1] != ".") {
+                current += ".";
+                result += ".";
+              }
+            }
+          }
           if (value == "*!") {
             recents = "";
             result = "";
@@ -216,10 +254,10 @@
       }
       setInterval(() => {
         if (!monitorResult) {
-          let result1 = result.split(/(\/|\*|\-|\+)/gi).join(" ").replace(/\*/gi, "&times;").replace(/\//gi, "&divide;").replace(/\+/gi, "&plus;").replace(/\-/gi, "&minus;").toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          let result1 = result.split(/(\/|\*|\-|\+)/gi).join(" ").replace(/\*/gi, "&times;").replace(/\//gi, "&divide;").replace(/\+/gi, "&plus;").replace(/\-/gi, "&minus;");
           document.querySelector(".monitor").innerHTML = (!result1.trim() ? 0 : result1);
         } else {
-          document.querySelector(".monitor").textContent = monitorResult.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          document.querySelector(".monitor").textContent = monitorResult;
         }
       });
     </script>
