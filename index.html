@@ -111,11 +111,15 @@
         <div class="content">
           <div class="monitor"></div>
           <div class="btn-content">
-            <div class="row" style="margin-top: -35px">
-              <div class="calculator-button operator" onclick="calculate('^')" style="margin: 9.5px !important">x^y</div>
-              <div class="calculator-button operator" onclick="calculate('*!')" style="margin: 9.5px !important">AC</div>
-              <div class="calculator-button operator" onclick="calculate('+!')" style="margin: 9.5px !important">CE</div>
-              <div class="calculator-button operator" onclick="calculate('=')">&equals;</div>
+            <div class="row" style="margin-top: -35px; margin-left: 10px !important">
+              <div style="display: inline-block">
+                <div class="calculator-button operator" onclick="calculate('(')" style="margin: 1px !important; width: 13px">(</div>
+                <div class="calculator-button operator" onclick="calculate(')')" style="margin: 1px !important; width: 13px">)</div>
+              </div>
+              <div class="calculator-button operator" onclick="calculate('^')" style="margin: 1px !important">x^y</div>
+              <div class="calculator-button operator" onclick="calculate('*!')" style="margin: 1px !important">AC</div>
+              <div class="calculator-button operator" onclick="calculate('+!')" style="margin: 1px !important">CE</div>
+              <div class="calculator-button operator" onclick="calculate('=')" style="margin: 6.4px !important">&equals;</div>
             </div>
             <div class="row">
               <div class="calculator-button" onclick="calculate(this.textContent)">7</div>
@@ -204,7 +208,13 @@
               result += recents;
             }
             evaled = true;
-            monitorResult = eval(result);
+            try {
+              monitorResult = eval(result);
+            } catch (e) {
+              if (e instanceof SyntaxError) {
+                monitorResult = "Error";
+              }
+            }
           }
           if (value == "+!") {
             current = null;
@@ -250,10 +260,13 @@
           if (value == "^") {
             exponent ? exponent = false : exponent = true;
           }
+          if (value == "(" || value == ")") {
+            result += value.trim();
+          }
         }
       }
       setInterval(() => {
-        if (!monitorResult) {
+        if (!(monitorResult == 0 ? true : monitorResult)) {
           let result1 = result.split(/(\/|\*|\-|\+)/gi).join(" ").replace(/\*/gi, "&times;").replace(/\//gi, "&divide;").replace(/\+/gi, "&plus;").replace(/\-/gi, "&minus;");
           document.querySelector(".monitor").innerHTML = (!result1.trim() ? 0 : result1);
         } else {
